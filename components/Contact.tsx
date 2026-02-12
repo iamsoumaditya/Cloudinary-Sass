@@ -32,7 +32,7 @@ export default function Contact({ type }: { type: string }) {
     }
   };
   return (
-    <fieldset className="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4 text-base-content">
+    <fieldset className="fieldset bg-base-200 border-base-300 rounded-box border p-4 text-base-content max-w-screen">
       <form className="card-body space-y-6" onSubmit={handleContact}>
         <div className="form-control w-full">
           <label className="label">Name</label>
