@@ -13,8 +13,6 @@ import {auth}from "@clerk/nextjs/server"
 import ThemeToogler from "@/components/ThemeToogler";
 import SearchInput from "@/components/SearchInput"
 import {Button,Modal} from "@/components/Modal";
-import { Info } from "lucide-react";
-import toast from "react-hot-toast";
 import HeaderButton from "./HeaderButton";
 
 export default async function Header() {
@@ -23,7 +21,7 @@ export default async function Header() {
   const {userId}= await auth()
 
   return (
-    <div className="navbar bg-base-100 shadow-sm text-base-content max-w-screen">
+    <div className="navbar bg-base-100 shadow-sm text-base-content max-w-screen sticky top-0 z-60">
       <div className="flex-1">
         <SignedIn>
           <Link href={"/home"} className="btn btn-ghost text-xl">
@@ -37,8 +35,8 @@ export default async function Header() {
         </SignedOut>
       </div>
       <div className="flex gap-2 items-center">
-        <SearchInput />
         <SignedIn>
+        <SearchInput />
           <HeaderButton />
         </SignedIn>
         <SignedOut>

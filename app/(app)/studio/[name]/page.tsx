@@ -348,7 +348,7 @@ export default function ImageEditingStudio() {
                       ref={imageRef}
                       src={imageUrl}
                       alt="Edited preview"
-                      className="rounded-lg block"
+                      className="rounded-lg block h-full w-full object-contain"
                       style={
                         isPreview
                           ? {
@@ -415,18 +415,21 @@ export default function ImageEditingStudio() {
                     <button className="btn btn-warning">Preview</button>
                   </div>
                 )}
+
+                {help && (
+                  <div
+                    className="absolute top-0 left-0 z-50 tooltip tooltip-top tooltip-warning"
+                    data-tip="Click to get help"
+                  >
+                    <Link href={`/learn-more#${activeTab}`} target="_blank">
+                      <button className="btn btn-warning">
+                        <HelpCircle />
+                        Help
+                      </button>
+                    </Link>
+                  </div>
+                )}
               </div>
-              {help&&<div
-                className="absolute top-2 left-2 z-50 tooltip tooltip-top tooltip-warning"
-                data-tip="Click to get help"
-              >
-                <Link href={`/learn-more#${activeTab}`} target="_blank">
-                  <button className="btn btn-warning">
-                    <HelpCircle />
-                    Help
-                  </button>
-                </Link>
-              </div>}
             </div>
           </div>
 

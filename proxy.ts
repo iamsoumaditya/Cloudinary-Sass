@@ -12,7 +12,7 @@ interface SessionClaims {
   };
 }
 
-const isPublicApiRoute = createRouteMatcher(["/api/webhooks(.*)"]);
+const isPublicApiRoute = createRouteMatcher(["/api/webhooks(.*)","/api/subscribe(.*)"]);
 
 export default clerkMiddleware(async (auth, req) => {
   const { sessionClaims } = await auth()
