@@ -5,6 +5,9 @@ import { CldImage } from "next-cloudinary";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useSearchParams } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+import { Info } from "lucide-react";
 
 const socialFormats = {
   "Instagram Square (1:1)": { width: 1080, height: 1080, aspectRatio: "1:1" },
@@ -48,7 +51,6 @@ const socialFormats = {
   },
   "LinkedIn Banner (4:1)": { width: 1584, height: 396, aspectRatio: "4:1" },
 
-
   "YouTube Thumbnail (16:9)": { width: 1280, height: 720, aspectRatio: "16:9" },
   "YouTube Channel Banner": { width: 2560, height: 1440, aspectRatio: "16:9" },
 
@@ -69,7 +71,16 @@ const socialFormats = {
   },
 };
 
-const socialPlatform = ["Instagram","Facebook", "Twitter", "YouTube", "LinkedIn", "Pinterest", "Snapchat", "WhatsApp"]
+const socialPlatform = [
+  "Instagram",
+  "Facebook",
+  "Twitter",
+  "YouTube",
+  "LinkedIn",
+  "Pinterest",
+  "Snapchat",
+  "WhatsApp",
+];
 
 type SocialPlatform =
   | "Instagram"
@@ -84,6 +95,9 @@ type SocialPlatform =
 type SocialFormat = keyof typeof socialFormats;
 
 export default function SocialSharePage() {
+  const router = useRouter();
+  const { user, isLoaded, isSignedIn } = useUser();
+
   const searchParams = useSearchParams();
   const q = searchParams.get("q");
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
@@ -97,32 +111,67 @@ export default function SocialSharePage() {
   const [isTransforming, setIsTransforming] = useState(false);
   const imageRef = useRef<HTMLImageElement>(null);
 
+  const userId = user?.id;
+  const tPoint = Number(user?.publicMetadata.tPoint);
+  const maxTPoint = Number(user?.publicMetadata.maxTPoint);
+
   useEffect(() => {
-    if(!q) return
-    setUploadedImage(atob(q))
-  }, [q])
-  
+    if (!q) return;
+    setUploadedImage(atob(q));
+  }, [q]);
+
   useEffect(() => {
     if (uploadedImage) {
       setIsTransforming(true);
     }
   }, [selectedFormat, uploadedImage]);
 
+
+  const handleTransformation = async () => {
+    if (!isSignedIn) {
+      toast.error("Sign in to use this feature");
+      router.push("/home");
+      return;
+    }
+    if (!isLoaded) {
+      toast.error("Unable to get user");
+      router.refresh();
+      return;
+    }
+    if (tPoint >= maxTPoint) {
+      toast.error("Your Transformation point exhausted");
+      return;
+    }
+    await axios.patch("/api/metadata-update/transform", {
+      userId,
+    });
+    await user.reload();
+  };
+
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;
+    if (tPoint >= maxTPoint) {
+      toast.error("Your Transformation point exhausted");
+      return;
+    }
     setIsUploading(true);
     const formData = new FormData();
     formData.append("file", file);
 
     try {
-      const res = await axios.post("/api/image-upload",formData);
+      const res = await axios.post("/api/image-upload", formData);
       setUploadedImage(res.data.publicId);
-    } catch (error) {
+      handleTransformation();
+    } catch (error: any) {
       console.log(error);
-      toast.error("Failed to upload image");
+      if (error.response) {
+        toast.error(error.response.data.error);
+      } else {
+        toast.error("Failed to upload image");
+      }
     } finally {
       setIsUploading(false);
     }
@@ -130,7 +179,7 @@ export default function SocialSharePage() {
 
   const handleDownload = () => {
     if (!imageRef.current) return;
-    setIsDownloading(true)
+    setIsDownloading(true);
 
     fetch(imageRef.current.src)
       .then((response) => response.blob())
@@ -145,8 +194,8 @@ export default function SocialSharePage() {
         link.click();
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
-        setIsDownloading(false)
-        toast.success("Image Downloaded Successfully")
+        setIsDownloading(false);
+        toast.success("Image Downloaded Successfully");
       });
   };
 
@@ -188,9 +237,11 @@ export default function SocialSharePage() {
                 <select
                   className="select select-bordered w-full text-base-content focus:ring-0 outline-0 bg-base-300"
                   value={selectedPlatform}
-                  onChange={(e) =>
-                    setSelectedPlatform(e.target.value as SocialPlatform)
-                  }
+                  onChange={(e) => {
+                    handleTransformation();
+                    setSelectedPlatform(e.target.value as SocialPlatform);
+                  }}
+                  disabled={tPoint >= maxTPoint}
                 >
                   {socialPlatform.map((format) => (
                     <option key={format} value={format}>
@@ -206,15 +257,19 @@ export default function SocialSharePage() {
                 <select
                   className="select select-bordered w-full text-base-content focus:ring-0 outline-0 bg-base-300"
                   value={selectedFormat}
-                  onChange={(e) =>
-                    setSelectedFormat(e.target.value as SocialFormat)
-                  }
+                  onChange={(e) => {
+                    handleTransformation();
+                    setSelectedFormat(e.target.value as SocialFormat);
+                  }}
+                  disabled={tPoint >= maxTPoint}
                 >
-                  {Object.keys(socialFormats).filter((format)=>format.includes(selectedPlatform)).map((format) => (
-                    <option key={format} value={format}>
-                      {format}
-                    </option>
-                  ))}
+                  {Object.keys(socialFormats)
+                    .filter((format) => format.includes(selectedPlatform))
+                    .map((format) => (
+                      <option key={format} value={format}>
+                        {format}
+                      </option>
+                    ))}
                 </select>
               </div>
 
@@ -228,6 +283,7 @@ export default function SocialSharePage() {
                       <span className="loading loading-infinity loading-xl text-base-content"></span>
                     </div>
                   )}
+
                   <CldImage
                     width={socialFormats[selectedFormat].width}
                     height={socialFormats[selectedFormat].height}

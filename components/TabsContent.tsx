@@ -81,9 +81,9 @@ export default function TabContent({
   setHeight: Dispatch<SetStateAction<string>>;
   aspectRatio: string;
   setAspectRatio: Dispatch<SetStateAction<string>>;
-  cropMode: "fit" | "fill" | "scale" | "thumb" | "limit" | "pad";
+  cropMode: "fit" | "fill" | "scale" | "thumb" | "limit" | "pad"|"auto";
   setCropMode: Dispatch<
-    SetStateAction<"fit" | "fill" | "scale" | "thumb" | "limit" | "pad">
+    SetStateAction<"fit" | "fill" | "scale" | "thumb" | "limit" | "pad"|"auto">
   >;
   gravity: string;
   setGravity: Dispatch<SetStateAction<string>>;
@@ -254,6 +254,7 @@ export default function TabContent({
               onChange={(e) =>
                 setCropMode(
                   e.target.value as
+                    | "auto"
                     | "fit"
                     | "fill"
                     | "scale"
@@ -264,6 +265,7 @@ export default function TabContent({
               }
               className="select select-bordered select-sm w-full outline-0"
             >
+              <option value="auto">Auto</option>
               <option value="fill">Fill</option>
               <option value="fit">Fit</option>
               <option value="scale">Scale</option>

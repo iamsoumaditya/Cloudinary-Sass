@@ -1,12 +1,14 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { Download, RotateCcw } from "lucide-react";
+import { Download, HelpCircle, RotateCcw } from "lucide-react";
 import TabContent from "@/components/TabsContent";
 import toast from "react-hot-toast";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getCldImageUrl } from "next-cloudinary";
-import { off } from "process";
+import { useUser } from "@clerk/nextjs";
+import axios from "axios";
+import Link from "next/link";
 
 const tabs = [
   { id: "resize", label: "Resize" },
@@ -28,6 +30,7 @@ const positionMap: Record<string, string> = {
 
 export default function ImageEditingStudio() {
   const router = useRouter();
+  const { user, isLoaded, isSignedIn } = useUser();
   // Image state
   const [imageUrl, setImageUrl] = useState<string>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -42,10 +45,10 @@ export default function ImageEditingStudio() {
   const [height, setHeight] = useState<string>("600");
   const [aspectRatio, setAspectRatio] = useState<string>("free");
   const [cropMode, setCropMode] = useState<
-    "fit" | "fill" | "scale" | "thumb" | "limit" | "pad"
-  >("fit");
+    "fit" | "fill" | "scale" | "thumb" | "limit" | "pad"|"auto"
+  >("auto");
   const [gravity, setGravity] = useState<string>("auto");
-  const [makeCircular, setMakeCircular] = useState(false);
+  const [makeCircular, setMakeCircular] = useState<boolean>(false);
 
   // Quality
   const [quality, setQuality] = useState<number>(0);
@@ -90,16 +93,32 @@ export default function ImageEditingStudio() {
   const textRef = useRef<HTMLSpanElement | null>(null);
 
   const [isPreview, setIsPreview] = useState<boolean>(false);
+  const [help, setHelp] = useState<boolean>(false);
   const searchParams = useSearchParams();
   const q = searchParams.get("q");
 
+  const userId = user?.id;
+  const tPoint = Number(user?.publicMetadata.tPoint);
+  const maxTPoint = Number(user?.publicMetadata.maxTPoint);
+
   useEffect(() => {
+      setHelp(true)
+      const timer = setTimeout(() => {
+        setHelp(false);
+      }, 60_000); // 1 minute in ms
+
+      // cleanup if component unmounts
+      return () => clearTimeout(timer);
+    }, [activeTab]);
+
+  useEffect(() => {
+    setFormat(localStorage.getItem("format") ?? "auto");
     async function fetchImage() {
       if (!q) {
         router.back();
         return;
       }
-      setIsLoading(true)
+      setIsLoading(true);
       try {
         const url = getCldImageUrl({
           src: atob(q),
@@ -107,27 +126,28 @@ export default function ImageEditingStudio() {
           height: height,
           format: "auto",
           quality: "auto",
-          gravity:"auto"
-        })
+          crop: "auto",
+          gravity: "auto",
+        });
         await new Promise<void>((resolve, reject) => {
           const img = new Image();
           img.src = url;
           img.onload = () => resolve();
           img.onerror = () => reject();
-        })
+        });
         setImageUrl(url);
       } catch (error) {
-        router.back()
+        router.back();
       } finally {
-        setIsLoading(false)
-        setIsPreview(false)
+        setIsLoading(false);
+        setIsPreview(false);
       }
     }
-    fetchImage()
+    fetchImage();
   }, [q]);
 
   useEffect(() => {
-    if(isPreview)return
+    if (isPreview) return;
     setIsPreview(true);
   }, [
     brightness,
@@ -151,7 +171,6 @@ export default function ImageEditingStudio() {
     setCropMode("fit");
     setGravity("auto");
     setQuality(80);
-    setFormat("auto");
     setGrayscale(false);
     setSepia(false);
     setCartoonify(false);
@@ -203,9 +222,27 @@ export default function ImageEditingStudio() {
       router.push("/home");
       return;
     }
+    if (!isSignedIn) {
+      toast.error("Sign in to use this feature");
+      router.push("/home");
+      return;
+    }
+    if (!isLoaded) {
+      toast.error("Unable to get user");
+      router.refresh();
+      return;
+    }
+    if (tPoint >= maxTPoint) {
+      toast.error("Your Transformation point exhausted");
+      return;
+    }
     setIsLoading(true);
     const toastId = toast.loading("Transforming your image");
     try {
+      await axios.patch("/api/metadata-update/transform", {
+        userId,
+      });
+      await user.reload();
       const url = getCldImageUrl({
         src: atob(q),
         width: width,
@@ -213,7 +250,7 @@ export default function ImageEditingStudio() {
         crop: cropMode,
         gravity: gravity,
         format: format,
-        quality: quality===0?"auto":quality,
+        quality: quality === 0 ? "auto" : quality,
         border:
           borderWidth !== 0
             ? `${borderWidth}px_solid_rgb:${borderColor.replace("#", "")}`
@@ -264,16 +301,20 @@ export default function ImageEditingStudio() {
         ].filter(Boolean) as any,
       });
       setImageUrl(url);
-       await new Promise<void>((resolve, reject) => {
-         const img = new Image();
-         img.src = url;
-         img.onload = () => resolve();
-         img.onerror = () => reject();
-       });
+      await new Promise<void>((resolve, reject) => {
+        const img = new Image();
+        img.src = url;
+        img.onload = () => resolve();
+        img.onerror = () => reject();
+      });
       toast.success("Transformation successful");
-    } catch (error) {
-      toast.error("Something went wrong");
+    } catch (error: any) {
       console.log(error);
+      if (error.response) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("Something went wrong");
+      }
     } finally {
       setIsLoading(false);
       toast.dismiss(toastId);
@@ -375,6 +416,17 @@ export default function ImageEditingStudio() {
                   </div>
                 )}
               </div>
+              {help&&<div
+                className="absolute top-2 left-2 z-50 tooltip tooltip-top tooltip-warning"
+                data-tip="Click to get help"
+              >
+                <Link href={`/learn-more#${activeTab}`} target="_blank">
+                  <button className="btn btn-warning">
+                    <HelpCircle />
+                    Help
+                  </button>
+                </Link>
+              </div>}
             </div>
           </div>
 
@@ -485,7 +537,7 @@ export default function ImageEditingStudio() {
                     onClick={handleApplyChanges}
                     disabled={isLoading}
                   >
-                    {isLoading?"Applying Changes ...":"Apply Changes"}
+                    {isLoading ? "Applying Changes ..." : "Apply Changes"}
                   </button>
                   <button
                     onClick={handleDownload}

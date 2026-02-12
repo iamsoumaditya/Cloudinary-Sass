@@ -1,6 +1,9 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Moon, Sun, Trash2 } from "lucide-react";
+import axios from "axios";
+import { useUser } from "@clerk/nextjs";
+import toast from "react-hot-toast";
 
 export function Button() {
   const handleClick = () => {
@@ -13,17 +16,16 @@ export function Button() {
 }
 
 export function Modal({ theme }: { theme: "light" | "dark" }) {
-  const [asset,setAsset]= useState<"images"|"videos"|"account">()
-  const handleClick = (asset: "images" | "videos"|"account") => {
-    setAsset(asset)
-    const modal = document.getElementById(
-      "delete",
-    ) as HTMLDialogElement | null;
+  const { user, isLoaded, isSignedIn } = useUser();
+  const [asset, setAsset] = useState<"images" | "videos" | "account">();
+
+  const handleClick = (asset: "images" | "videos" | "account") => {
+    setAsset(asset);
+
+    const modal = document.getElementById("delete") as HTMLDialogElement | null;
     modal?.showModal();
   };
-  const handleDelete = () => {
-    console.log("Deleted")
-  }
+
   const isDark = theme === "dark";
 
   function toggleTheme() {
@@ -31,6 +33,36 @@ export function Modal({ theme }: { theme: "light" | "dark" }) {
     document.cookie = `theme=${next}; path=/; max-age=31536000`;
     location.reload();
   }
+
+  const handleDelete = async (type: string) => {
+    if (!isSignedIn) {
+      toast.error(`Sign in to delete ${type}`);
+      return;
+    }
+    if (!isLoaded) {
+      toast.error(`Unable to delete ${type}`);
+      return;
+    }
+    const userId = user.id;
+     const toastId = toast.loading(`Deleting ${type}...`);
+     try {
+       await axios.delete(`/api/${type}`, { data: { userId } });
+       if (type === "account") {
+         toast.success(`Your account deletion request has been initiated`);
+       } else {
+         toast.success(`${type} deleted successfully`);
+       }
+     } catch (error: any) {
+       console.log(error);
+       if (error.response) {
+         toast.error(error.response.data.error);
+       } else {
+         toast.error(`Unable to delete ${type}`);
+       }
+     } finally {
+       toast.dismiss(toastId);
+     }
+  };
   return (
     <>
       <dialog id="settings" className="modal modal-bottom sm:modal-middle">
@@ -88,6 +120,12 @@ export function Modal({ theme }: { theme: "light" | "dark" }) {
               onClick={() => handleClick("account")}
             />
           </div>
+          <p className="text-gray-700 text-sm">
+            Your account will be immediately disabled upon deletion, and all
+            associated assets will be permanently deleted within approximately
+            30 days or shortly thereafter. Once deleted, these assets cannot be
+            recovered.
+          </p>
           <div className="modal-action">
             <form method="dialog">
               <button className="btn bg-amber-400 text-black">Close</button>
@@ -103,15 +141,32 @@ export function Modal({ theme }: { theme: "light" | "dark" }) {
   );
 }
 
-export function ConfirmModal({ text, fn }: { text: string, fn: ()=>void }) {
+export function ConfirmModal({
+  text,
+  id,
+  fn,
+}: {
+  text: string;
+  id?: string;
+  fn: (text: string) => void;
+}) {
   return (
-    <dialog id="delete" className="modal  modal-bottom sm:modal-middle">
+    <dialog
+      id={id ? "delete-media" : "delete"}
+      className="modal  modal-bottom sm:modal-middle"
+    >
       <div className="modal-box">
         <h3 className="font-bold text-lg">Are you sure?</h3>
-        <p className="py-4">You want to delete {text==="account"?"your":"all"} {text} permanently</p>
+        <p className="py-4">
+          You want to delete {text === "account" ? "your" : "all"} {text}{" "}
+          permanently
+        </p>
         <div className="modal-action">
           <form method="dialog">
-            <button className="btn mx-3 bg-red-500 text-white" onClick={() => fn()}>
+            <button
+              className="btn mx-3 bg-red-500 text-white"
+              onClick={() => fn(text)}
+            >
               Delete
             </button>
             <button className="btn bg-green-500 text-white">Cancel</button>

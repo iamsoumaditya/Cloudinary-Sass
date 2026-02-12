@@ -19,11 +19,15 @@ model Video{
   title String
   description String?
   publicId String
+  authorId String
   originalSize String
   compressedSize String
   duration Float
+  isDownloadAble Boolean @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
+
+  @@unique([publicId, authorId])
 }
 
 model Image{
@@ -31,7 +35,60 @@ model Image{
   title String
   type String
   publicId String
+  authorId String
   size Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  @@unique([publicId, authorId])
+}
+model Subscribe{
+  id String @id @default(cuid())
+  email String
+  ipAddress String
+  authorId String?
+  country String
+  city String
+  userAgent String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  @@unique([email])
+}
+model Contact{
+  id String @id @default(cuid())
+  name String
+  email String
+  description String
+  ipAddress String
+  type String
+  isResolved Boolean @default(false)
+  authorId String?
+  country String
+  city String
+  userAgent String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+}
+model DefaultImage{
+  id String @id @default(cuid())
+  title String
+  type String
+  publicId String
+  size Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}
+
+model DefaultVideo{
+  id String @id @default(cuid())
+  title String
+  description String?
+  publicId String
+  originalSize String
+  compressedSize String
+  duration Float
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
 }

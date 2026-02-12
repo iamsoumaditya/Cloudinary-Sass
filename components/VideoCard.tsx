@@ -38,7 +38,6 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, onDownload }) => {
       width: 1920,
       height: 1080,
       quality: "auto",
-      gravity: "auto",
       crop:"scale",
     });
   }, []);
@@ -149,9 +148,14 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, onDownload }) => {
               setIsDownloading(true);
               setTimeout(() => {
                 try {
-                  onDownload(getFullVideoUrl(video.publicId), video.title);
-                } catch {
-                  toast.error("Download failed");
+                  if (!video.isDownloadAble) {
+                    throw new Error("Unable to download default videos");
+                  } else {
+                    onDownload(getFullVideoUrl(video.publicId), video.title);
+                  }
+                } catch (error: any) {
+                  console.log(error)
+                  toast.error(error.message||"Download failed");
                 } finally {
                   setIsDownloading(false);
                 }

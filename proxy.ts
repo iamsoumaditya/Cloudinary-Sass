@@ -1,37 +1,59 @@
-import { clerkMiddleware,createRouteMatcher } from "@clerk/nextjs/server";
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 const isPublicRoute = createRouteMatcher([
   "/sign-in(.*)",
   "/sign-up(.*)",
-  "/",
-  "/home",
+  "/"
 ]);
+interface SessionClaims {
+  metadata?: {
+    isAccountDeleted?: boolean;
+  };
+}
 
-const isPublicApiRoute = createRouteMatcher([
-    "/api/videos"
-])
+const isPublicApiRoute = createRouteMatcher(["/api/webhooks(.*)"]);
 
 export default clerkMiddleware(async (auth, req) => {
-    const currentUrl = new URL(req.url)
+  const { sessionClaims } = await auth()
+  const claims = sessionClaims as SessionClaims
 
-    const isAccessingHome = currentUrl.pathname === "/home"
-    
-    const isApiRequest = currentUrl.pathname.startsWith("/api")
+  const currentUrl = new URL(req.url);
 
-    if ((await auth()).isAuthenticated && isPublicRoute(req) && !isAccessingHome) {
-        return NextResponse.redirect(new URL("/home",req.url))
-    }
+  const isAccessingHome = currentUrl.pathname === "/home";
 
-    if (!isPublicRoute(req) && !isPublicApiRoute(req)) {
-        await auth.protect();
-    }
+  const isAccessingStatusPage = currentUrl.pathname === "/account-status";
 
-    if (isApiRequest && !isPublicApiRoute(req)) {
-        await auth.protect();
-    }
+  const isApiRequest = currentUrl.pathname.startsWith("/api");
 
-    return NextResponse.next()
+  const isApiRequestToCancelDeletion = currentUrl.pathname.startsWith("/api/account");
+
+  const isAccountDeleted = claims?.metadata?.isAccountDeleted ?? false;
+
+  if (isAccountDeleted && !isAccessingStatusPage&&!isApiRequestToCancelDeletion) {
+    return NextResponse.redirect(new URL("/account-status", req.url));
+  }
+  if (!isAccountDeleted && isAccessingStatusPage) {
+    return NextResponse.redirect(new URL("/home", req.url));
+  }
+
+  if (
+    (await auth()).isAuthenticated &&
+    isPublicRoute(req) &&
+    !isAccessingHome
+  ) {
+    return NextResponse.redirect(new URL("/home", req.url));
+  }
+
+  if (!isPublicRoute(req) && !isPublicApiRoute(req)) {
+    await auth.protect();
+  }
+
+  if (isApiRequest && !isPublicApiRoute(req)) {
+    await auth.protect();
+  }
+
+  return NextResponse.next();
 });
 
 export const config = {

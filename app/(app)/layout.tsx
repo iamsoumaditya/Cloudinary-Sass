@@ -1,9 +1,7 @@
 "use client";
-
 import React, { useEffect, useState } from "react";
 import { Home, Share2, Video } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-
 
 type Tab = "home" | "video-upload" | "social-share";
 
@@ -19,6 +17,9 @@ export default function AppLayout({
   const handleTabChange = (tab: Tab) => {
     if (activeTab === tab) return
     setActiveTab(tab)
+    if(tab === "social-share")
+      router.push(`/${tab}/new/`)
+    else
     router.push(`/${tab}`)
   };
 

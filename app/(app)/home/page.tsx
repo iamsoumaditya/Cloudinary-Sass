@@ -5,19 +5,16 @@ import VideoCard from "@/components/VideoCard";
 import { Video, Image } from "@/types";
 import toast from "react-hot-toast";
 import { CldImage } from "next-cloudinary";
-import {
-  Download,
-  Edit2,
-  EditIcon,
-  MoreVertical,
-  Share2,
-} from "lucide-react";
+import { Download, Edit2, EditIcon, MoreVertical, Share2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSearch } from "@/context/searchContext";
+import { useAuth } from "@clerk/nextjs";
+import { slugify } from "@/utils/slugify";
 
 export default function HomePage() {
   const router = useRouter();
   const { query } = useSearch();
+  const { userId } = useAuth();
   const [videos, setVideos] = useState<Video[]>([]);
   const [images, setImages] = useState<Image[]>([]);
   const [loadingVideos, setLoadingVideos] = useState(true);
@@ -29,6 +26,7 @@ export default function HomePage() {
   const [imagesPage, setImagesPage] = useState<number>(1);
   const [imagesTotalPage, setImagesTotalPage] = useState<number>();
 
+
   useEffect(() => {
     const params = new URLSearchParams();
     if (query) params.set("q", query);
@@ -36,11 +34,19 @@ export default function HomePage() {
   }, [query]);
 
   useEffect(() => {
+    if (!userId) return;
+    const loadVideo = localStorage.getItem("loadVideo")??"null";
     const fetchVideos = async () => {
       try {
         const response = await axios.get("/api/videos", {
-          params: { page: query ? 1 : videosPage, query },
+          params: {
+            page: query ? 1 : videosPage,
+            query,
+            userId,
+            loadVideo
+          },
         });
+        localStorage.setItem("loadVideo", "null");
         if (Array.isArray(response.data.videos)) {
           setVideos(response.data.videos);
           query
@@ -58,14 +64,17 @@ export default function HomePage() {
       }
     };
     fetchVideos();
-  }, [videosPage, query]);
+  }, [videosPage, query, userId]);
 
   useEffect(() => {
+    if (!userId) return;
+    const loadImage = localStorage.getItem("loadImage")??"null";
     const fetchImages = async () => {
       try {
         const response = await axios.get("/api/images", {
-          params: { page: query ? 1 : imagesPage, query },
+          params: { page: query ? 1 : imagesPage, query, userId, loadImage },
         });
+        localStorage.setItem("loadImage","null");
         if (Array.isArray(response.data.images)) {
           setImages(response.data.images);
           query
@@ -77,13 +86,13 @@ export default function HomePage() {
         }
       } catch (error) {
         console.log(error);
-        toast.error("Failed to fetch videos");
+        toast.error("Failed to fetch images");
       } finally {
         setLoadingImages(false);
       }
     };
     fetchImages();
-  }, [imagesPage, query]);
+  }, [imagesPage, query, userId]);
 
   const handleDownload = (url: string, title: string) => {
     const parts = url.split("/upload/");
@@ -109,13 +118,13 @@ export default function HomePage() {
     setIsImageDownloading(true);
     const imgEl = imageRefs.current[id];
     if (!imgEl) return;
-
+    
     const res = await fetch(imgEl.src);
     const blob = await res.blob();
 
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.href = url;
+    link.href = url
     link.download = `${title}`;
     document.body.appendChild(link);
     link.click();
@@ -268,7 +277,7 @@ export default function HomePage() {
                             onClick={(e) => {
                               e.preventDefault();
                               router.push(
-                                `/social-share?q=${btoa(image.publicId)}`,
+                                `/social-share/${slugify(image.title)}?q=${btoa(image.publicId)}`,
                               );
                             }}
                           >
@@ -283,7 +292,7 @@ export default function HomePage() {
                             className="btn btn-neutral btn-sm btn-circle"
                             onClick={(e) => {
                               e.preventDefault();
-                              router.push(`/studio?q=${btoa(image.publicId)}`);
+                              router.push(`/studio/${slugify(image.title)}?q=${btoa(image.publicId)}`);
                             }}
                           >
                             <EditIcon size={16} />

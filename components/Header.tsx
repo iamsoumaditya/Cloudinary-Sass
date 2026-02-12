@@ -9,13 +9,18 @@ import {
   SignedOut,
   UserButton,
 } from "@clerk/nextjs";
+import {auth}from "@clerk/nextjs/server"
 import ThemeToogler from "@/components/ThemeToogler";
 import SearchInput from "@/components/SearchInput"
 import {Button,Modal} from "@/components/Modal";
+import { Info } from "lucide-react";
+import toast from "react-hot-toast";
+import HeaderButton from "./HeaderButton";
 
 export default async function Header() {
   const cookieStore = await cookies();
-  const theme = cookieStore.get("theme")?.value ?? "light";
+  const theme = cookieStore.get("theme")?.value ?? "dark";
+  const {userId}= await auth()
 
   return (
     <div className="navbar bg-base-100 shadow-sm text-base-content max-w-screen">
@@ -31,8 +36,11 @@ export default async function Header() {
           </Link>
         </SignedOut>
       </div>
-      <div className="flex gap-2">
+      <div className="flex gap-2 items-center">
         <SearchInput />
+        <SignedIn>
+          <HeaderButton />
+        </SignedIn>
         <SignedOut>
           <SignInButton>
             <button className="btn btn-outline btn-sm sm:btn-md rounded-2xl">
@@ -59,17 +67,20 @@ export default async function Header() {
               className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
             >
               <li>
-                <a className="justify-between">
+                <Link
+                  href={`/${userId}/account-settings`}
+                  className="justify-between"
+                >
                   Profile
                   <span className="badge">New</span>
-                </a>
+                </Link>
               </li>
               <li>
                 <Button />
               </li>
               <li>
                 <SignOutButton>
-                  <a>Logout</a>
+                  <span>Logout</span>
                 </SignOutButton>
               </li>
             </ul>
