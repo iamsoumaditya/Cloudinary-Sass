@@ -25,18 +25,19 @@ export default async function Header() {
       <div className="flex-1">
         <SignedIn>
           <Link href={"/home"} className="btn btn-ghost text-xl">
+            <img src="/logo.png" className="h-6 w-6" />
             MediaRefine
           </Link>
         </SignedIn>
         <SignedOut>
           <Link href={"/"} className="btn btn-ghost text-xl">
-            MediaRefine
+            <img src="/logo.png" className="h-6 w-6" /> MediaRefine
           </Link>
         </SignedOut>
       </div>
       <div className="flex gap-2 items-center">
         <SignedIn>
-        <SearchInput />
+          <SearchInput />
           <HeaderButton />
         </SignedIn>
         <SignedOut>

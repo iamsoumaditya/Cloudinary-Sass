@@ -119,16 +119,16 @@ export default function PrivacyPolicyPage() {
               For privacy-related questions, data requests, or concerns, you may
               contact us directly via email:{" "}
               <Link
-                href="mailto:support@yourdomain.com"
+                href="mailto:mediarefine.company@gmail.com"
                 className="link link-hover"
               >
-                support@yourdomain.com
+                mediarefine.company@gmail.com
               </Link>
             </p>
           </div>
-        <div className="text-center text-lg opacity-70">
-          Last updated: 11-02-26
-        </div>
+          <div className="text-center text-lg opacity-70">
+            Last updated: 11-02-26
+          </div>
         </div>
       </div>
     </div>

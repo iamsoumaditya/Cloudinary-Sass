@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { PrismaClient } from "@/app/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import nodemailer from "nodemailer";
+import NewsletterSubscribeEmail from "@/utils/NewsletterSubscribe";
+import { render } from "@react-email/render";
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL,
@@ -12,6 +15,7 @@ const prisma = new PrismaClient({
 });
 
 export async function POST(req: NextRequest) {
+  const user = await currentUser();
   try {
     const { email } = await req.json();
 
@@ -59,6 +63,36 @@ export async function POST(req: NextRequest) {
         city,
       },
     });
+
+    const emailHtml = await render(
+      NewsletterSubscribeEmail({
+        username: user?.fullName,
+      }),
+    );
+    const emailTextual = await render(
+      NewsletterSubscribeEmail({
+        username: user?.fullName,
+      }),
+      { plainText: true },
+    );
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_PASSWORD,
+      },
+    });
+
+    const mail = {
+      from: `MediaRefine <${process.env.GMAIL_USER}>`,
+      to: email,
+      subject: "Welcome to Media Refine Newsletter",
+      text: emailTextual,
+      html: emailHtml,
+    };
+
+    await transporter.sendMail(mail);
 
     return NextResponse.json({
       success: true,

@@ -62,12 +62,12 @@ export default function AccountStatusPage() {
           </h1>
 
           <p className="opacity-70 text-lg">
-            Your deletion request is being processed. You can track the progress
+            Your deletion request is under processing. You can track the progress
             below.
           </p>
         </div>
         <form action={cancelDeletion}>
-          <div className="card bg-base-content">
+          <div className="card bg-base-100">
             <div className="card-body space-y-8">
               <div className="text-lg opacity-80">
                 Current Status:{" "}

@@ -1,7 +1,13 @@
 "use client";
 
 import { Easing, motion } from "framer-motion";
-import { ArrowDown, CheckCircle, Verified } from "lucide-react";
+import {
+  ArrowDown,
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight,
+  Verified,
+} from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -23,6 +29,8 @@ export default function HomePage() {
   const [activeFilter, setActiveFilter] = useState<
     "grayscale" | "sepia" | "cartoon" | "oil_paint"
   >("grayscale");
+  const [isCropped, setIsCropped] = useState<boolean>(false);
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-base-100 via-base-50 to-base-100">
       <section className="relative min-h-[calc(100vh-80px)] flex items-center justify-center overflow-hidden pt-20 pb-20">
@@ -128,23 +136,45 @@ export default function HomePage() {
                 ))}
               </div>
             </motion.div>
+            <motion.div
+              {...fadeInUp}
+              className="flex flex-col items-center justify-center gap-8 h-96"
+            >
+              <motion.div
+                key={isCropped ? "cropped" : "original"}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4 }}
+                className={`relative rounded-2xl overflow-hidden shadow-2xl bg-base-300 h-auto sm:h-full ${
+                  isCropped ? "max-w-sm" : "w-full"
+                }`}
+              >
+                <img
+                  src={isCropped ? "/crop_after.png" : "/crop_before.png"}
+                  alt={isCropped ? "Cropped image" : "Original image"}
+                  className="w-full h-full object-contain sm:object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
 
-            <figure className="diff aspect-4/3 rounded-2xl" tabIndex={0}>
-              <div className="diff-item-1" role="img" tabIndex={0}>
-                <img
-                  alt="content_aware_cropping_after_example"
-                  src="/crop_after.jpg"
-                  className=""
-                />
-              </div>
-              <div className="diff-item-2" role="img">
-                <img
-                  alt="content_aware_cropping_before_example"
-                  src="/crop_before.png"
-                />
-              </div>
-              <div className="diff-resizer"></div>
-            </figure>
+                <motion.button
+                  onClick={() => setIsCropped((prev) => !prev)}
+                  className={`absolute ${!isCropped ? "right-2" : "left-4"} top-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary hover:bg-primary/90 text-white rounded-full p-4 shadow-xl transition-colors`}
+                  animate={{ x: [0, 8, 0] }}
+                  transition={{
+                    duration: 1.5,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  {!isCropped ? <ChevronRight /> : <ChevronLeft />}
+                </motion.button>
+
+                <div className="absolute top-4 right-4 badge badge-primary">
+                  {isCropped ? "9:16" : "16:9"}
+                </div>
+              </motion.div>
+            </motion.div>
           </motion.div>
         </div>
       </section>

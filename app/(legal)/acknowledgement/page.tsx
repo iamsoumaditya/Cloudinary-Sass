@@ -227,10 +227,10 @@ export default function AcknowledgmentPage() {
               <p>
                 Contact Email:{" "}
                 <Link
-                  href="mailto:support@yourdomain.com"
-                  className="link link-primary ml-1"
+                  href="mailto:mediarefine.company@gmail.com"
+                  className="link link-hover link-primary ml-1"
                 >
-                   support@yourdomain.com
+                  mediarefine.company@gmail.com
                 </Link>
               </p>
               <p>Upon receiving a valid request, we will:</p>

@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { clerkClient } from "@clerk/nextjs/server";
+import { clerkClient,currentUser } from "@clerk/nextjs/server";
+import nodemailer from "nodemailer";
+import { render } from "@react-email/render";
+import AccountDeletionEmail from "@/utils/AccountDeletion";
 
 export async function DELETE(request: NextRequest) {
+  const user = await currentUser();
   const client = await clerkClient();
   const data = await request.json();
   const { userId } = data;
@@ -15,6 +19,37 @@ export async function DELETE(request: NextRequest) {
     await client.users.updateUserMetadata(userId, {
       publicMetadata: { isAccountDeleted: true, accountDeletionStep:1 },
     });
+
+    const emailHtml = await render(
+      AccountDeletionEmail({
+        username: user?.fullName,
+      }),
+    );
+    const emailTextual = await render(
+      AccountDeletionEmail({
+        username: user?.fullName,
+      }),
+      { plainText: true },
+    );
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_PASSWORD,
+      },
+    });
+
+    const mail = {
+      from: `MediaRefine <${process.env.GMAIL_USER}>`,
+      to: user?.primaryEmailAddress?.emailAddress,
+      subject: "Your Media Refine Account Deletion Request",
+      text: emailTextual,
+      html: emailHtml,
+    };
+
+    await transporter.sendMail(mail);
+
     return NextResponse.json(
       {
         message:

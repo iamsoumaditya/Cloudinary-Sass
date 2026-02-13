@@ -111,6 +111,9 @@ export default function Footer() {
         </nav>
         <nav>
           <h6 className="footer-title">More</h6>
+          <Link href={"/faq"} className="link link-hover">
+            FAQ Page
+          </Link>
           <Link href={"/complaint"} className="link link-hover">
             Raise a complaint
           </Link>

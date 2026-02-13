@@ -139,7 +139,9 @@ export default function TermsOfUsePage() {
             </section>
 
             <section className="space-y-2">
-              <h2 className="font-semibold text-xl">10. Third-Party Services</h2>
+              <h2 className="font-semibold text-xl">
+                10. Third-Party Services
+              </h2>
               <p>
                 Our platform may rely on third-party providers such as cloud
                 storage, authentication, and analytics services.
@@ -178,10 +180,10 @@ export default function TermsOfUsePage() {
               <p>
                 For questions regarding these Terms, contact us at:{" "}
                 <Link
-                  href="mailto:support@yourdomain.com"
+                  href="mailto:mediarefine.company@gmail.com"
                   className="link link-hover font-medium"
                 >
-                  support@yourdomain.com
+                  mediarefine.company@gmail.com
                 </Link>
               </p>
             </section>
