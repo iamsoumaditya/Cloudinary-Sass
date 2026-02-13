@@ -50,10 +50,7 @@ export default function MobileNavbar({
       if (!isLoaded) {
         throw new Error("Unable to get user data");
       }
-      await generateCertificate(
-        user?.fullName ?? user.username ?? "A User",
-        user?.id.replace("user_", ""),
-      );
+      await generateCertificate(user?.fullName??user.username??"A User",user?.primaryEmailAddress?.emailAddress, user?.id.replace("user_", ""));
     } catch (error: any) {
       console.log(error);
       toast.error(error.message);
