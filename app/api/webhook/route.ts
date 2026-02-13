@@ -3,7 +3,7 @@ import { clerkClient } from "@clerk/nextjs/server";
 import { NextRequest } from "next/server";
 
 export async function POST(req: NextRequest) {
-  console.log("Request Incoming",Date.now())
+  // console.log("Request Incoming",Date.now())
     const client = await clerkClient()
   try {
     const evt = await verifyWebhook(req);
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
          lastResetAt: new Date().toISOString()
        },
      });
-       console.log(`User ${id} created with metadata`);
+      //  console.log(`User ${id} created with metadata`);
     }
 
     return new Response("Webhook processed", { status: 200 });
