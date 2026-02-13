@@ -56,7 +56,7 @@ export default function Footer() {
     <>
       <footer className="footer sm:footer-horizontal bg-base-200 text-base-content p-10 justify-between max-w-screen">
         <nav>
-          <h6 className="footer-title">Services</h6>
+          <h5 className="footer-title">Services</h5>
           <Link
             href={`/about-us#${slugify("Smart AI Video Processing")}`}
             className="link link-hover"
@@ -83,7 +83,7 @@ export default function Footer() {
           </Link>
         </nav>
         <nav>
-          <h6 className="footer-title">Company</h6>
+          <h5 className="footer-title">Company</h5>
           <Link href={"/home"} className="link link-hover">
             Home
           </Link>
@@ -98,7 +98,7 @@ export default function Footer() {
           </Link>
         </nav>
         <nav>
-          <h6 className="footer-title">Legal</h6>
+          <h5 className="footer-title">Legal</h5>
           <Link href={"/terms-of-use"} className="link link-hover">
             Terms of use
           </Link>
@@ -110,7 +110,7 @@ export default function Footer() {
           </Link>
         </nav>
         <nav>
-          <h6 className="footer-title">More</h6>
+          <h5 className="footer-title">More</h5>
           <Link href={"/faq"} className="link link-hover">
             FAQ Page
           </Link>
@@ -119,7 +119,7 @@ export default function Footer() {
           </Link>
         </nav>
         <nav>
-          <h6 className="footer-title">Subscribe to our Newsletter</h6>
+          <h5 className="footer-title">Subscribe to our Newsletter</h5>
           <form className="join" onSubmit={handleSubscribe}>
             <input
               name="email"
