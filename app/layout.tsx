@@ -41,6 +41,12 @@ export default async function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en" data-theme={daisyTheme}>
+        <head>
+          <meta
+            name="google-site-verification"
+            content="kcktzWbJEJNRYdFoPoZv4zxHjKjZV8xmGSoYE3BIo0U"
+          />
+        </head>
         <body
           className={`${lato.className} ${geistSans.variable} ${geistMono.variable} antialiased`}
         >
