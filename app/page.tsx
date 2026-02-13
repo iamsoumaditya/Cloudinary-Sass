@@ -159,6 +159,7 @@ export default function HomePage() {
                 <motion.button
                   onClick={() => setIsCropped((prev) => !prev)}
                   className={`absolute ${!isCropped ? "right-2" : "left-4"} top-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary hover:bg-primary/90 text-white rounded-full p-4 shadow-xl transition-colors`}
+                  aria-label="crop button"
                   animate={{ x: [0, 8, 0] }}
                   transition={{
                     duration: 1.5,

@@ -11,7 +11,7 @@ export default function ThemeToggler({ theme }: { theme: "light" | "dark" }) {
   }
 
   return (
-    <label className="toggle cursor-pointer mt-2">
+    <label htmlFor="theme change" className="toggle cursor-pointer mt-2">
       <input type="checkbox" checked={isDark} onChange={toggleTheme} />
       <Moon size={18} className="bg-black rounded-2xl" />
       <Sun size={18} />

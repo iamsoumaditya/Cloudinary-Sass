@@ -160,6 +160,7 @@ export default function Footer() {
         <nav className="justify-self-end">
           <div className="grid grid-flow-col gap-4">
             <a
+              aria-label="github profile link"
               href="https://github.com/iamsoumaditya/Cloudinary-Sass"
               target="_blank"
               rel="noopener noreferrer"
@@ -168,6 +169,7 @@ export default function Footer() {
               <FaGithub className="size-5" />
             </a>
             <a
+              aria-label="linkrdin profile link"
               href="https://www.linkedin.com/in/soumaditya-roy/"
               target="_blank"
               rel="noopener noreferrer"
@@ -176,6 +178,7 @@ export default function Footer() {
               <FaLinkedin className="size-5" />
             </a>
             <a
+              aria-label="x profile link"
               href="https://x.com/iamsoumaditya"
               target="_blank"
               rel="noopener noreferrer"
@@ -184,6 +187,7 @@ export default function Footer() {
               <FaXTwitter className="size-5" />
             </a>
             <a
+              aria-label="instagram profile link"
               href="https://www.instagram.com/iamsoumaditya/"
               target="_blank"
               rel="noopener noreferrer"
