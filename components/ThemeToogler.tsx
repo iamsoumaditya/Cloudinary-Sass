@@ -12,7 +12,12 @@ export default function ThemeToggler({ theme }: { theme: "light" | "dark" }) {
 
   return (
     <label htmlFor="theme change" className="toggle cursor-pointer mt-2">
-      <input type="checkbox" checked={isDark} onChange={toggleTheme} />
+      <input
+        type="checkbox"
+        checked={isDark}
+        onChange={toggleTheme}
+        aria-label="Toggle theme"
+      />
       <Moon size={18} className="bg-black rounded-2xl" />
       <Sun size={18} />
     </label>
