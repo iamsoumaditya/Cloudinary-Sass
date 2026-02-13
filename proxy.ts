@@ -13,7 +13,7 @@ interface SessionClaims {
 }
 
 const isPublicApiRoute = createRouteMatcher([
-  "/api/webhooks(.*)",
+  "/api/webhook(.*)",
   "/api/subscribe(.*)",
   "/faq",
   "/complaint",
