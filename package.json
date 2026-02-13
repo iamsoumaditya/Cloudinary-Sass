@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint"
   },
@@ -24,7 +24,6 @@
     "filesize": "^11.0.13",
     "framer-motion": "^12.34.0",
     "lucide-react": "^0.563.0",
-    "mailgen": "^2.0.32",
     "next": "16.1.6",
     "next-cloudinary": "^6.17.5",
     "next-themes": "^0.4.6",
